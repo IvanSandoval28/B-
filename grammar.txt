@@ -1,0 +1,5 @@
+Expression: Term((Add|Subtract)Term)*
+
+Term: Factor((Multiply|Divide)Factor)*
+
+Factor: INT|Float
