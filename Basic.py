@@ -29,14 +29,18 @@ class CharError(Error):
         super().__init__(details)
     def errorStr(self):
         return print(f"{self.type} |{self.details}|")
+
 class ParsError(Error):
     pass
+
+
+
 class Tokens:
     def __init__(self, type_, value=None):
         self.type = type_
         self.value = value
     def __repr__(self):
-        if self.value != None:return f"{self.type}: {self.value}"
+        if self.value != None:return f"{self.type}:{self.value}"
         else: return f"{self.type}"
 class Lexer:
     def __init__(self, text=None):
@@ -98,19 +102,19 @@ class Lexer:
             else:
                 return CharError(f"Unexpected character '{self.curChar}'").errorStr()
         return tokens 
-
 class NumberNode:
     def __init__(self, token):
         self.token = token
-        
+    def __repr__(self):
+        return f"{self.token}"
 class BinaryOpNode:
     def __init__(self, left, opT, right):
         self.left = left
         self.opT = opT
         self.right = right
     def __repr__(self):
-        return f"{self.left}|{self.opT}|{self.right}"
-    
+        return f"({self.left}, {self.opT}, {self.right})"
+
 class Parser:
     def __init__(self, Tlist):
         self.tlist = Tlist
@@ -121,27 +125,41 @@ class Parser:
         self.curPos += 1
         if self.curPos < len(self.tlist):
             self.curT = self.tlist[self.curPos]
-        #if self.curPos == len(self.tlist):
-        #    self.curT = None
+        #else: self.curT = None if self.curPos == len(self.tlist): self.curT = None
+    def parse(self):
+        res = self.Expression()
+        return res
     def Factor(self):
-        this1 = self.curT
-        if this1.type in (Integer, Float):
-            return f"{this1.type}"
-        self.advance()
-
-    def Expreession(self):
-        pass
+        NodeF = self.curT
+        if NodeF.type in (Integer, Float):
+            self.advance()
+            return NumberNode(NodeF)
+        elif NodeF == ParL:
+            pass
+        else: return None
+    def Expression(self):
+        return self.binop(self.Term, (Add, Subtract))
     def Term(self):
-        pass
+        return self.binop(self.Factor, (Multiply, Divide))
+    def binop(self, func, ops):
+        left = func()
+        while self.curT.type in ops:
+                op_tok = self.curT
+                self.advance()
+                right = func()
+                left = BinaryOpNode(left, op_tok, right)
+        return left
 
 
-        
+
 while True:
     inputs1 = str(input("Basic > "))
-    if inputs1 == "end":
+    if inputs1 == "end":     
         break
     else:
+        
         this = Lexer(inputs1).makeToken()
-        print(this)
+        #print(this)
         parser = Parser(this)
-        print(parser.Factor())
+        test = parser.parse()
+        print(test)
