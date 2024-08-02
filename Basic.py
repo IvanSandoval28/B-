@@ -14,7 +14,7 @@ Numbers = ".0123456789"
 ################################
 ################################################
 #                    Bugs                      # 
-################################################
+################################################    
 #  1: "." doesnt know to be string or int      #
 #  2: MakeNum Method doesnt know .2132.23132   #
 #                                              #
@@ -129,14 +129,22 @@ class Parser:
     def parse(self):
         res = self.Expression()
         return res
+    
     def Factor(self):
         NodeF = self.curT
         if NodeF.type in (Integer, Float):
             self.advance()
             return NumberNode(NodeF)
-        elif NodeF == ParL:
-            pass
-        else: return None
+        elif NodeF.type == ParL:
+            self.advance()
+            node = self.Expression()
+            if self.curT.type != ParR:
+                raise Exception("Expected ')'")
+            self.advance()
+            return node
+        else:
+            return None
+
     def Expression(self):
         return self.binop(self.Term, (Add, Subtract))
     def Term(self):
@@ -163,3 +171,4 @@ while True:
         parser = Parser(this)
         test = parser.parse()
         print(test)
+      
